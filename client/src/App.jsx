@@ -1,39 +1,33 @@
-import { useEffect, useState } from 'react';
-import api from './services/api';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
 
 function App() {
-  const [status, setStatus] = useState('checking');
-
-  useEffect(() => {
-    api
-      .get('/health')
-      .then(() => {
-        setStatus('connected');
-      })
-      .catch(() => {
-        setStatus('failed');
-      });
-  }, []);
-
-  const statusText = {
-    checking: 'Checking...',
-    connected: '✓ Connected',
-    failed: '✗ Unable to connect',
-  };
-
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>DevSync</h1>
-        <p>Developer Collaboration Platform</p>
-      </header>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<div>SETU — Home</div>} />
 
-      <main>
-        <p className={`status status-${status}`}>
-          Backend Status: {statusText[status]}
-        </p>
-      </main>
-    </div>
+          <Route path="/login" element={<Login />} />
+
+          <Route path="/register" element={<Register />} />
+
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
