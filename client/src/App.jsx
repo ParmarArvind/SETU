@@ -1,39 +1,79 @@
-import { useEffect, useState } from 'react';
-import api from './services/api';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { OrganizationProvider } from './context/OrganizationContext';
+import { ProjectProvider } from './context/ProjectContext';
+import ProtectedRoute from './components/ProtectedRoute';
+
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import Organizations from './pages/Organizations';
+import OrganizationDetail from './pages/OrganizationDetail';
+import Projects from './pages/Projects';
+import ProjectDetail from './pages/ProjectDetail';
 
 function App() {
-  const [status, setStatus] = useState('checking');
-
-  useEffect(() => {
-    api
-      .get('/health')
-      .then(() => {
-        setStatus('connected');
-      })
-      .catch(() => {
-        setStatus('failed');
-      });
-  }, []);
-
-  const statusText = {
-    checking: 'Checking...',
-    connected: '✓ Connected',
-    failed: '✗ Unable to connect',
-  };
-
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>DevSync</h1>
-        <p>Developer Collaboration Platform</p>
-      </header>
+    <AuthProvider>
+      <OrganizationProvider>
+        <ProjectProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<div>SETU — Home</div>} />
 
-      <main>
-        <p className={`status status-${status}`}>
-          Backend Status: {statusText[status]}
-        </p>
-      </main>
-    </div>
+              <Route path="/login" element={<Login />} />
+
+              <Route path="/register" element={<Register />} />
+
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/organizations"
+                element={
+                  <ProtectedRoute>
+                    <Organizations />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/organizations/:id"
+                element={
+                  <ProtectedRoute>
+                    <OrganizationDetail />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/organizations/:id/projects"
+                element={
+                  <ProtectedRoute>
+                    <Projects />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/projects/:projectId"
+                element={
+                  <ProtectedRoute>
+                    <ProjectDetail />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </BrowserRouter>
+        </ProjectProvider>
+      </OrganizationProvider>
+    </AuthProvider>
   );
 }
 
