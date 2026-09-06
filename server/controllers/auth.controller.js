@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-import User from '../models/user.model.js';
+import User from '../models/User.js';
 import env from '../config/env.js';
 
 // --------------------------------------------------------------
@@ -22,6 +22,7 @@ const generateToken = (userId) => {
 // --------------------------------------------------------------
 const toSafeUser = (user) => ({
   id: user._id,
+  _id: user._id,
   name: user.name,
   email: user.email,
   role: user.role,
