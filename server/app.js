@@ -7,6 +7,7 @@ import healthRoutes from './routes/health.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import organizationRoutes from './routes/organization.routes.js';
 import projectRoutes from './routes/project.routes.js';
+import taskRoutes from './routes/task.routes.js';
 import notFound from './middleware/notFound.middleware.js';
 import errorHandler from './middleware/error.middleware.js';
 
@@ -29,6 +30,7 @@ app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/organizations', organizationRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/tasks', taskRoutes);
 
 // 404 handler
 app.use(notFound);

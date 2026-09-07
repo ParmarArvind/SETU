@@ -12,6 +12,7 @@ import {
   addProjectMember,
   removeProjectMember,
 } from '../controllers/projectMember.controller.js';
+import { createTask, listTasks } from '../controllers/task.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 import { loadProject } from '../middleware/project.middleware.js';
 import { requirePermission } from '../middleware/rbac.middleware.js';
@@ -72,5 +73,20 @@ router.delete(
   requirePermission('project_members:manage'),
   removeProjectMember,
 );
+
+// --------------------------------------------------------------
+// Task creation (FR-12) — nested under a verified project.
+// Milestone 4 adds the corresponding GET /:projectId/tasks list
+// route and the /api/tasks/:taskId detail/update routes.
+// --------------------------------------------------------------
+router.post(
+  '/:projectId/tasks',
+  protect,
+  loadProject,
+  requirePermission('tasks:create'),
+  createTask,
+);
+
+router.get('/:projectId/tasks', protect, loadProject, listTasks);
 
 export default router;

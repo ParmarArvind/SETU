@@ -16,7 +16,7 @@ The project is being developed phase-by-phase with a focus on clean architecture
 | Phase 2 — Authentication | ✅ Completed |
 | Phase 3 — Organization & Team Management | ✅ Completed |
 | Phase 4 — Project Management | ✅ Completed |
-| Phase 5 — Task Management & Kanban | ⏳ Upcoming |
+| Phase 5 — Task Management & Kanban | ✅ Completed |
 
 ---
 
@@ -41,7 +41,7 @@ Established the basic MERN application architecture.
 
 ---
 
-# Phase 2 — Authentication ✅
+## Phase 2 — Authentication ✅
 
 Implemented secure user authentication and protected application access.
 
@@ -58,8 +58,9 @@ Implemented secure user authentication and protected application access.
 - Persistent user authentication
 - Dashboard authentication flow
 
+---
 
-# Phase 3 — Organization & Team Management ✅
+## Phase 3 — Organization & Team Management ✅
 
 Implemented organization management, team membership, and role-based access control.
 
@@ -78,8 +79,9 @@ Implemented organization management, team membership, and role-based access cont
 - Organization switching
 - Role-based frontend controls
 
+---
 
-# Phase 4 — Project Management ✅
+## Phase 4 — Project Management ✅
 
 Implemented project management, project access control, project membership, and project collaboration foundations.
 
@@ -97,7 +99,40 @@ Implemented project management, project access control, project membership, and 
 - Project dashboard UI
 - Project permission-based controls
 - Organization-to-project integration
-### Authentication Flow
+
+---
+
+## Phase 5 — Task Management & Kanban ✅
+
+Implemented task management and a Kanban-based engineering workflow inside projects.
+
+### Completed
+
+- Task creation and management
+- Task retrieval and updating
+- Task deletion
+- Task assignment
+- Task priority management
+- Task status management
+- Task due dates
+- Project-based task isolation
+- Task authorization and access control
+- Kanban board interface
+- To Do, In Progress, and Done workflow
+- Moving tasks between Kanban columns
+- Task status updates from the Kanban board
+- Task creation from the project workflow
+- Project task listing
+- Task management UI
+- Task detail/edit workflow
+- Integration between projects and tasks
+- Role/permission-based task controls
+
+---
+
+# 🔐 Authentication & Authorization Flow
+
+```text
 User
  │
  ├── Register
@@ -127,3 +162,58 @@ User
  Project Membership
         ↓
  Project Resources
+        ↓
+      Tasks
+        ↓
+   Kanban Workflow
+
+
+
+
+🏗️ Current Architecture
+SETU
+│
+├── client/
+│   └── React + Vite
+│       ├── Components
+│       ├── Pages
+│       ├── Context
+│       ├── Services
+│       └── Routing
+│
+├── server/
+│   ├── Controllers
+│   ├── Models
+│   ├── Routes
+│   ├── Middleware
+│   ├── Services
+│   └── Configuration
+│
+├── MongoDB
+│   ├── Users
+│   ├── Organizations
+│   ├── Projects
+│   └── Tasks
+│
+└── GitHub
+    ├── main
+    └── development
+
+
+    
+🔄 Project Workflow
+User
+  ↓
+Organization
+  ↓
+Project
+  ↓
+Task
+  ↓
+Kanban Board
+  ↓
+To Do
+  ↓
+In Progress
+  ↓
+Done
