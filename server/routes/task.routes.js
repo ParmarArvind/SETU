@@ -5,9 +5,10 @@ import {
   updateTask,
   assignTask,
   updateTaskPriority,
+  updateTaskStatus,
 } from '../controllers/task.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
-import { loadTask } from '../middleware/task.middleware.js';
+import { loadTask, requireStatusUpdatePermission } from '../middleware/task.middleware.js';
 import { requirePermission } from '../middleware/rbac.middleware.js';
 
 const router = express.Router();
@@ -42,6 +43,14 @@ router.patch(
   loadTask,
   requirePermission('tasks:manage_priority'),
   updateTaskPriority,
+);
+
+router.patch(
+  '/:taskId/status',
+  protect,
+  loadTask,
+  requireStatusUpdatePermission,
+  updateTaskStatus,
 );
 
 export default router;

@@ -11,6 +11,9 @@ import Organizations from './pages/Organizations';
 import OrganizationDetail from './pages/OrganizationDetail';
 import Projects from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
+import Tasks from './pages/Tasks';
+import KanbanBoard from './pages/KanbanBoard';
+import TaskDetail from './pages/TaskDetail';
 
 function App() {
   return (
@@ -66,6 +69,33 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <ProjectDetail />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/projects/:projectId/tasks"
+                element={
+                  <ProtectedRoute>
+                    <Tasks />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/projects/:projectId/kanban"
+                element={
+                  <ProtectedRoute>
+                    <KanbanBoard />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/tasks/:taskId"
+                element={
+                  <ProtectedRoute>
+                    <TaskDetail />
                   </ProtectedRoute>
                 }
               />

@@ -12,7 +12,7 @@ import {
   addProjectMember,
   removeProjectMember,
 } from '../controllers/projectMember.controller.js';
-import { createTask, listTasks } from '../controllers/task.controller.js';
+import { createTask, listTasks, getKanbanBoard } from '../controllers/task.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 import { loadProject } from '../middleware/project.middleware.js';
 import { requirePermission } from '../middleware/rbac.middleware.js';
@@ -88,5 +88,7 @@ router.post(
 );
 
 router.get('/:projectId/tasks', protect, loadProject, listTasks);
+
+router.get('/:projectId/kanban', protect, loadProject, getKanbanBoard);
 
 export default router;

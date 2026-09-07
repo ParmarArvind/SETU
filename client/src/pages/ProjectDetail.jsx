@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import RequireRole from '../components/RequireRole';
 import {
   getProject,
@@ -159,6 +159,11 @@ const ProjectDetail = () => {
         {project.name} {project.status === 'archived' && <em>(archived)</em>}
       </h1>
       <p>{project.description}</p>
+      <p>
+        <Link to={`/projects/${projectId}/tasks`}>Task List</Link>
+        {' · '}
+        <Link to={`/projects/${projectId}/kanban`}>Kanban Board</Link>
+      </p>
 
       <section>
         <h2>Dashboard</h2>

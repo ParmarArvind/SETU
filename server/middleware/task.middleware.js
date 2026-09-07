@@ -4,6 +4,7 @@ import Task from '../models/Task.js';
 import OrganizationMember from '../models/OrganizationMember.js';
 import ProjectMember from '../models/ProjectMember.js';
 import { PROJECT_VISIBLE_TO_ALL_ROLES } from './project.middleware.js';
+import { hasPermission } from '../config/permissions.js';
 
 // --------------------------------------------------------------
 // loadTask
@@ -104,4 +105,55 @@ const loadTask = async (req, res, next) => {
   }
 };
 
-export { loadTask };
+// --------------------------------------------------------------
+// requireStatusUpdatePermission
+//
+// The Kanban drag-and-drop gate (FR-16, FR-20). Must run AFTER
+// loadTask, since it reads req.task and req.membership.
+//
+// This is NOT a single requirePermission() call because the SRS
+// genuinely describes an OR of two different rules (Section 3.4,
+// FR-16): "Users with appropriate permissions shall be able to
+// move tasks between columns" covers Owner/Admin broadly via
+// tasks:update, but a Developer moving their OWN assigned card is
+// a narrower, separate permission (tasks:update_own_status) that
+// only applies to their own tasks — not anyone's.
+//
+//   PASS if:  role has tasks:update (any task, any status)
+//   PASS if:  role has tasks:update_own_status AND the caller is
+//             this task's assignee
+//   Otherwise: 403
+//
+// A Developer with tasks:update_own_status trying to move a task
+// assigned to someone else correctly falls through to 403 — the
+// permission name says "own status" and this is where that word
+// actually gets enforced.
+// --------------------------------------------------------------
+const requireStatusUpdatePermission = (req, res, next) => {
+  if (!req.membership || !req.task) {
+    return res.status(500).json({
+      success: false,
+      message: 'requireStatusUpdatePermission used without loadTask',
+    });
+  }
+
+  const role = req.membership.role;
+
+  if (hasPermission(role, 'tasks:update')) {
+    return next();
+  }
+
+  const isAssignee =
+    req.task.assignee && req.task.assignee.toString() === req.user.id;
+
+  if (isAssignee && hasPermission(role, 'tasks:update_own_status')) {
+    return next();
+  }
+
+  return res.status(403).json({
+    success: false,
+    message: "You do not have permission to change this task's status",
+  });
+};
+
+export { loadTask, requireStatusUpdatePermission };

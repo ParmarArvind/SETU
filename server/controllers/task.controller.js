@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 
 import Task, { TASK_PRIORITIES, TASK_STATUSES } from '../models/Task.js';
 import ProjectMember from '../models/ProjectMember.js';
-import { hasPermission } from '../config/permissions.js';
 
 // --------------------------------------------------------------
 // POST /api/projects/:projectId/tasks
@@ -124,20 +123,114 @@ const createTask = async (req, res, next) => {
 // team's work, not just "my tasks" — role differentiates what a
 // user can EDIT, not what they can VIEW.
 //
-// NOTE: this is intentionally a plain list for now. Search,
-// filtering (?status=, ?priority=, ?assignee=, ?label=), and
-// pagination all arrive in Milestone 7 — kept separate so this
-// milestone's contract is easy to verify on its own.
+// Query params (all optional):
+//   search    -> case-insensitive match against title OR description
+//   status    -> one of TASK_STATUSES
+//   priority  -> one of TASK_PRIORITIES
+//   assignee  -> a user id, or the literal string 'unassigned'
+//   label     -> a single label string (tasks whose labels array
+//                contains it)
+//   page      -> 1-indexed, default 1
+//   limit     -> default 20, capped at 100 (a client can't request
+//                an unbounded page and force a full collection scan)
+//
+// Every filter is validated explicitly and rejected with 400 on a
+// bad value, same reasoning as Milestone 5's listProjects status
+// filter: a typo'd query param should never silently return the
+// wrong (or an empty) list.
 // --------------------------------------------------------------
 const listTasks = async (req, res, next) => {
   try {
-    const tasks = await Task.find({ project: req.project._id })
-      .populate('assignee', 'name email avatar')
-      .sort({ createdAt: -1 });
+    const { search, status, priority, assignee, label } = req.query;
+
+    const query = { project: req.project._id };
+
+    if (search !== undefined && search.trim()) {
+      const escaped = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const pattern = new RegExp(escaped, 'i');
+      query.$or = [{ title: pattern }, { description: pattern }];
+    }
+
+    if (status !== undefined) {
+      if (!TASK_STATUSES.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Status filter must be one of: ' + TASK_STATUSES.join(', '),
+        });
+      }
+      query.status = status;
+    }
+
+    if (priority !== undefined) {
+      if (!TASK_PRIORITIES.includes(priority)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Priority filter must be one of: ' + TASK_PRIORITIES.join(', '),
+        });
+      }
+      query.priority = priority;
+    }
+
+    if (assignee !== undefined) {
+      if (assignee === 'unassigned') {
+        query.assignee = null;
+      } else if (!mongoose.Types.ObjectId.isValid(assignee)) {
+        return res.status(400).json({
+          success: false,
+          message: "Assignee filter must be a valid user id or 'unassigned'",
+        });
+      } else {
+        query.assignee = assignee;
+      }
+    }
+
+    if (label !== undefined && label.trim()) {
+      // Mongo matches an array field against a scalar automatically —
+      // this finds tasks whose `labels` array contains this value.
+      query.labels = label.trim();
+    }
+
+    // --- Pagination ---
+    const page = Number.parseInt(req.query.page, 10) || 1;
+    const requestedLimit = Number.parseInt(req.query.limit, 10) || 20;
+
+    if (page < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'page must be 1 or greater',
+      });
+    }
+
+    if (requestedLimit < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'limit must be 1 or greater',
+      });
+    }
+
+    const limit = Math.min(requestedLimit, 100);
+    const skip = (page - 1) * limit;
+
+    const [tasks, total] = await Promise.all([
+      Task.find(query)
+        .populate('assignee', 'name email avatar')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Task.countDocuments(query),
+    ]);
 
     return res.status(200).json({
       success: true,
-      data: { tasks },
+      data: {
+        tasks,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit) || 1,
+        },
+      },
     });
   } catch (error) {
     next(error);
@@ -345,6 +438,98 @@ const updateTaskPriority = async (req, res, next) => {
 };
 
 // --------------------------------------------------------------
+// PATCH /api/tasks/:taskId/status
+//
+// The endpoint the Kanban board's drag-and-drop calls (FR-16,
+// FR-20). Sits behind loadTask + requireStatusUpdatePermission
+// (task.middleware.js) — the OR-of-two-rules gate that decides
+// whether the caller can move THIS task, since Owner/Admin/Manager
+// can move any task while a Developer can only move their own
+// assigned one. That decision is fully owned by the middleware;
+// by the time this controller runs, it's already authorized.
+//
+// No restriction on which status can follow which — SRS FR-20 asks
+// for free movement between the four columns, not a workflow graph
+// (e.g. nothing stops moving directly from To Do to Done).
+// --------------------------------------------------------------
+const updateTaskStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+
+    if (!status || !TASK_STATUSES.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Status must be one of: ' + TASK_STATUSES.join(', '),
+      });
+    }
+
+    const updatedTask = await Task.findByIdAndUpdate(
+      req.task._id,
+      { status },
+      { new: true, runValidators: true },
+    ).populate('assignee', 'name email avatar');
+
+    return res.status(200).json({
+      success: true,
+      data: { task: updatedTask },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// --------------------------------------------------------------
+// GET /api/projects/:projectId/kanban
+//
+// Sits behind loadProject only — same reasoning as listTasks
+// (Milestone 4): board visibility is project visibility, nothing
+// stricter. This groups the SAME data listTasks returns into the
+// four-column shape FR-19 describes, so the frontend board
+// (Milestone 8) can render columns directly from the response
+// instead of grouping client-side.
+//
+// Column order follows TASK_STATUSES (Milestone 1) — that's the
+// whole reason that array is ordered rather than just a Set of
+// valid values.
+// --------------------------------------------------------------
+const STATUS_LABELS = {
+  todo: 'To Do',
+  in_progress: 'In Progress',
+  in_review: 'In Review',
+  done: 'Done',
+};
+
+const getKanbanBoard = async (req, res, next) => {
+  try {
+    const tasks = await Task.find({ project: req.project._id })
+      .populate('assignee', 'name email avatar')
+      .sort({ createdAt: -1 });
+
+    const columns = TASK_STATUSES.map((status) => ({
+      status,
+      label: STATUS_LABELS[status],
+      tasks: tasks.filter((task) => task.status === status),
+    }));
+
+    return res.status(200).json({
+      success: true,
+      data: { columns },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// --------------------------------------------------------------
 // Named exports
 // --------------------------------------------------------------
-export { createTask, listTasks, getTask, updateTask, assignTask, updateTaskPriority };
+export {
+  createTask,
+  listTasks,
+  getTask,
+  updateTask,
+  assignTask,
+  updateTaskPriority,
+  updateTaskStatus,
+  getKanbanBoard,
+};
