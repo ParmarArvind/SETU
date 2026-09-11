@@ -30,8 +30,6 @@ const Register = () => {
 
     try {
       await register(formData);
-
-      // Registration successful → redirect to dashboard
       navigate('/dashboard', { replace: true });
     } catch (err) {
       const message =
@@ -45,56 +43,78 @@ const Register = () => {
   };
 
   return (
-    <div>
-      <h1>Register</h1>
-
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="name">Name</label>
-
-          <input
-            id="name"
-            name="name"
-            type="text"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
+    <div className="auth-page register-page">
+      <div className="auth-card">
+        <div className="auth-brand">
+          <span className="navbar-logo">S</span>
+          <span>SETU</span>
         </div>
 
-        <div>
-          <label htmlFor="email">Email</label>
+        <span className="eyebrow">Developer workspace</span>
 
-          <input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
+        <div className="auth-original-content">
+          <h1>Create account</h1>
+          <p className="auth-subtitle">
+            Create your SETU developer workspace account.
+          </p>
+
+          <form onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="name">Name</label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Your name"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="you@example.com"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password">Password</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Minimum 6 characters"
+                required
+                minLength={6}
+              />
+            </div>
+
+            {error && <p role="alert">{error}</p>}
+
+            <button type="submit" disabled={loading}>
+              {loading ? 'Creating account...' : 'Create Account'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              disabled={loading}
+            >
+              Already have an account? Login
+            </button>
+          </form>
         </div>
-
-        <div>
-          <label htmlFor="password">Password</label>
-
-          <input
-            id="password"
-            name="password"
-            type="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            minLength={6}
-          />
-        </div>
-
-        {error && <p role="alert">{error}</p>}
-
-        <button type="submit" disabled={loading}>
-          {loading ? 'Creating account...' : 'Register'}
-        </button>
-      </form>
+      </div>
     </div>
   );
 };

@@ -23,10 +23,7 @@ const registerUser = async (app, overrides = {}) => {
 
   return {
     token: response.body.data.token,
-    user: {
-      ...response.body.data.user,
-      _id: response.body.data.user?._id || response.body.data.user?.id,
-    },
+    user: response.body.data.user,
   };
 };
 
@@ -104,4 +101,54 @@ const createProject = async (app, token, orgId, overrides = {}) => {
   };
 };
 
-export { registerUser, createOrganization, addOrgMember, createProject };
+// --------------------------------------------------------------
+// addProjectMember(app, actingToken, projectId, userId)
+//
+// Adds an existing org member to a project via the real
+// POST /api/projects/:projectId/members endpoint.
+// --------------------------------------------------------------
+const addProjectMember = async (app, actingToken, projectId, userId) => {
+  const response = await request(app)
+    .post(`/api/projects/${projectId}/members`)
+    .set('Authorization', `Bearer ${actingToken}`)
+    .send({ userId });
+
+  if (response.status !== 201) {
+    throw new Error(`addProjectMember failed: ${JSON.stringify(response.body)}`);
+  }
+
+  return { membership: response.body.data.membership };
+};
+
+// --------------------------------------------------------------
+// createTask(app, token, projectId, overrides)
+//
+// Creates a task inside a project via the real
+// POST /api/projects/:projectId/tasks endpoint.
+// --------------------------------------------------------------
+const createTask = async (app, token, projectId, overrides = {}) => {
+  const payload = {
+    title: `Task ${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    ...overrides,
+  };
+
+  const response = await request(app)
+    .post(`/api/projects/${projectId}/tasks`)
+    .set('Authorization', `Bearer ${token}`)
+    .send(payload);
+
+  if (response.status !== 201) {
+    throw new Error(`createTask failed: ${JSON.stringify(response.body)}`);
+  }
+
+  return { task: response.body.data.task };
+};
+
+export {
+  registerUser,
+  createOrganization,
+  addOrgMember,
+  createProject,
+  addProjectMember,
+  createTask,
+};

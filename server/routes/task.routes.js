@@ -1,0 +1,61 @@
+import express from 'express';
+import activityTracker from '../middleware/activity.middleware.js';
+
+import {
+  getTask,
+  updateTask,
+  assignTask,
+  updateTaskPriority,
+  updateTaskStatus,
+} from '../controllers/task.controller.js';
+import { protect } from '../middleware/auth.middleware.js';
+import { loadTask, requireStatusUpdatePermission } from '../middleware/task.middleware.js';
+import { requirePermission } from '../middleware/rbac.middleware.js';
+
+const router = express.Router();
+
+// --------------------------------------------------------------
+// Routes scoped to a single task — loadTask confirms the task
+// exists, the caller belongs to its organization, and (for
+// non-Owner/Admin roles) the caller has explicit access to the
+// task's project, before the request reaches the controller.
+// --------------------------------------------------------------
+router.get('/:taskId', protect, loadTask, getTask);
+
+router.patch(
+  '/:taskId',
+  protect,
+  loadTask,
+  requirePermission('tasks:update'),
+  activityTracker,
+  updateTask,
+);
+
+router.patch(
+  '/:taskId/assign',
+  protect,
+  loadTask,
+  requirePermission('tasks:assign'),
+  activityTracker,
+  assignTask,
+);
+
+router.patch(
+  '/:taskId/priority',
+  protect,
+  loadTask,
+  requirePermission('tasks:manage_priority'),
+  activityTracker,
+  updateTaskPriority,
+);
+
+router.patch(
+  '/:taskId/status',
+  protect,
+  loadTask,
+  requireStatusUpdatePermission,
+  activityTracker,
+  updateTaskStatus,
+);
+
+export default router;

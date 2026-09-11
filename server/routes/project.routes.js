@@ -1,4 +1,5 @@
 import express from 'express';
+import activityTracker from '../middleware/activity.middleware.js';
 
 import {
   getProject,
@@ -12,6 +13,7 @@ import {
   addProjectMember,
   removeProjectMember,
 } from '../controllers/projectMember.controller.js';
+import { createTask, listTasks, getKanbanBoard } from '../controllers/task.controller.js';
 import { protect } from '../middleware/auth.middleware.js';
 import { loadProject } from '../middleware/project.middleware.js';
 import { requirePermission } from '../middleware/rbac.middleware.js';
@@ -33,6 +35,7 @@ router.patch(
   protect,
   loadProject,
   requirePermission('projects:update'),
+  activityTracker,
   updateProject,
 );
 
@@ -41,7 +44,9 @@ router.patch(
   protect,
   loadProject,
   requirePermission('projects:archive'),
-  archiveProject,
+    activityTracker,
+    archiveProject,
+  
 );
 
 router.patch(
@@ -49,7 +54,8 @@ router.patch(
   protect,
   loadProject,
   requirePermission('projects:archive'),
-  unarchiveProject,
+    activityTracker,
+    unarchiveProject,
 );
 
 // --------------------------------------------------------------
@@ -62,7 +68,8 @@ router.post(
   protect,
   loadProject,
   requirePermission('project_members:manage'),
-  addProjectMember,
+    activityTracker,
+    addProjectMember,
 );
 
 router.delete(
@@ -70,7 +77,25 @@ router.delete(
   protect,
   loadProject,
   requirePermission('project_members:manage'),
+  activityTracker,  
   removeProjectMember,
 );
+
+// --------------------------------------------------------------
+// Task creation (FR-12) — nested under a verified project.
+// Milestone 4 adds the corresponding GET /:projectId/tasks list
+// route and the /api/tasks/:taskId detail/update routes.
+// --------------------------------------------------------------
+router.post(
+  '/:projectId/tasks',
+  protect,
+  loadProject,
+  requirePermission('tasks:create'),
+  createTask,
+);
+
+router.get('/:projectId/tasks', protect, loadProject, listTasks);
+
+router.get('/:projectId/kanban', protect, loadProject, getKanbanBoard);
 
 export default router;

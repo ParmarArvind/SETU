@@ -75,3 +75,8 @@ export const assignRole = async (organizationId, memberId, role) => {
   );
   return response.data;
 };
+
+export const discoverOrganizations = async (search = '') => (await api.get('/organizations/discover', { params: { search } })).data;
+export const requestToJoin = async (organizationId, validityDays = 7) => (await api.post(`/organizations/${organizationId}/join-requests`, { validityDays })).data;
+export const listMembershipRequests = async (organizationId) => (await api.get(`/organizations/${organizationId}/membership-requests`)).data;
+export const respondToMembershipRequest = async (requestId, action) => (await api.patch(`/organizations/membership-requests/${requestId}/respond`, { action })).data;

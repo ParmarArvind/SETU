@@ -1,0 +1,67 @@
+/* SETU navbar notification button */
+
+.navbar-notification-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-2);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 17px;
+  transition: 0.2s ease;
+}
+
+.navbar-notification-link:hover {
+  background: var(--surface-hover);
+  border-color: var(--blue);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
+.navbar-notification-link.active {
+  background: var(--blue-soft);
+  border-color: rgba(47, 128, 237, 0.35);
+  color: var(--blue);
+}
+
+.navbar-notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border: 2px solid var(--app-bg);
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 850;
+  line-height: 1;
+}
+
+html[data-theme="light"] .navbar-notification-link {
+  background: #fff;
+  border-color: #cbd8e7;
+  color: #172a43;
+}
+
+html[data-theme="light"] .navbar-notification-link:hover {
+  background: #f1f6fc;
+}
+
+@media (max-width: 700px) {
+  .navbar-notification-link {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+}
