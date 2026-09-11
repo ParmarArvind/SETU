@@ -69,3 +69,13 @@ const loadMembership = async (req, res, next) => {
 };
 
 export { loadMembership };
+
+export const loadOrganization = async (req, res, next) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ success: false, message: 'Invalid organization id' });
+    const organization = await Organization.findById(req.params.id);
+    if (!organization) return res.status(404).json({ success: false, message: 'Organization not found' });
+    req.organization = organization;
+    next();
+  } catch (error) { next(error); }
+};

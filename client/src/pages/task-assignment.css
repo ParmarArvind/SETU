@@ -1,0 +1,13 @@
+/* Assignment feedback */
+
+.task-action-success {
+  margin-top: 9px;
+  color: #4ade80;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.task-detail button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

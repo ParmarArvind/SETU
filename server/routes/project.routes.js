@@ -1,4 +1,5 @@
 import express from 'express';
+import activityTracker from '../middleware/activity.middleware.js';
 
 import {
   getProject,
@@ -34,6 +35,7 @@ router.patch(
   protect,
   loadProject,
   requirePermission('projects:update'),
+  activityTracker,
   updateProject,
 );
 
@@ -42,7 +44,9 @@ router.patch(
   protect,
   loadProject,
   requirePermission('projects:archive'),
-  archiveProject,
+    activityTracker,
+    archiveProject,
+  
 );
 
 router.patch(
@@ -50,7 +54,8 @@ router.patch(
   protect,
   loadProject,
   requirePermission('projects:archive'),
-  unarchiveProject,
+    activityTracker,
+    unarchiveProject,
 );
 
 // --------------------------------------------------------------
@@ -63,7 +68,8 @@ router.post(
   protect,
   loadProject,
   requirePermission('project_members:manage'),
-  addProjectMember,
+    activityTracker,
+    addProjectMember,
 );
 
 router.delete(
@@ -71,6 +77,7 @@ router.delete(
   protect,
   loadProject,
   requirePermission('project_members:manage'),
+  activityTracker,  
   removeProjectMember,
 );
 

@@ -42,10 +42,14 @@ const Projects = () => {
   };
 
   return (
-    <div>
-      <h1>Projects — {currentOrganization?.name}</h1>
-
-      <p>
+    <div className="page page-projects">
+      <div className="page-hero">
+        <div>
+          <span className="eyebrow">Workspace</span>
+          <h1>Projects — {currentOrganization?.name}</h1>
+          <p className="page-subtitle">Projects, delivery progress and team workspaces.</p>
+        </div>
+        <div className="page-hero-actions">
         <label htmlFor="status-filter">Show: </label>
         <select
           id="status-filter"
@@ -56,7 +60,8 @@ const Projects = () => {
           <option value="archived">Archived</option>
           <option value="all">All</option>
         </select>
-      </p>
+        </div>
+      </div>
 
       {loading && <p>Loading projects...</p>}
       {error && <p role="alert">{error}</p>}
@@ -65,10 +70,10 @@ const Projects = () => {
         <p>No {statusFilter !== 'all' ? statusFilter : ''} projects yet.</p>
       )}
 
-      <ul>
+      <ul className="card-grid">
         {projects.map((project) => (
-          <li key={project._id}>
-            <button type="button" onClick={() => navigate(`/projects/${project._id}`)}>
+          <li key={project._id} className="project-card">
+            <button type="button" className="card-link-button" onClick={() => navigate(`/projects/${project._id}`)}>
               {project.name}
             </button>{' '}
             {project.status === 'archived' && <em>(archived)</em>}
@@ -78,8 +83,14 @@ const Projects = () => {
 
       {/* Create is projects:create — owner/admin/manager per the permission matrix */}
       <RequireRole allowedRoles={['owner', 'admin', 'manager']}>
-        <h2>Create a new project</h2>
-        <form onSubmit={handleCreate}>
+        <section className="form-card create-form-card">
+          <div className="section-heading">
+          <div>
+            <span className="eyebrow">Create</span>
+            <h2>Create a new project</h2>
+          </div>
+        </div>
+          <form onSubmit={handleCreate}>
           <div>
             <label htmlFor="project-name">Project name</label>
             <input
@@ -107,7 +118,8 @@ const Projects = () => {
           <button type="submit" disabled={creating}>
             {creating ? 'Creating...' : 'Create Project'}
           </button>
-        </form>
+          </form>
+      </section>
       </RequireRole>
     </div>
   );

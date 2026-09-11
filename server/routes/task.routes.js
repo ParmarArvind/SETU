@@ -1,4 +1,5 @@
 import express from 'express';
+import activityTracker from '../middleware/activity.middleware.js';
 
 import {
   getTask,
@@ -26,6 +27,7 @@ router.patch(
   protect,
   loadTask,
   requirePermission('tasks:update'),
+  activityTracker,
   updateTask,
 );
 
@@ -34,6 +36,7 @@ router.patch(
   protect,
   loadTask,
   requirePermission('tasks:assign'),
+  activityTracker,
   assignTask,
 );
 
@@ -42,6 +45,7 @@ router.patch(
   protect,
   loadTask,
   requirePermission('tasks:manage_priority'),
+  activityTracker,
   updateTaskPriority,
 );
 
@@ -50,6 +54,7 @@ router.patch(
   protect,
   loadTask,
   requireStatusUpdatePermission,
+  activityTracker,
   updateTaskStatus,
 );
 

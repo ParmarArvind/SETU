@@ -37,8 +37,18 @@ const loadTask = async (req, res, next) => {
   try {
     const { taskId } = req.params;
 
+    console.log(
+      '[loadTask] taskId received:',
+      JSON.stringify(taskId),
+    );
+
     // 1. Reject malformed ids before hitting the database.
     if (!mongoose.Types.ObjectId.isValid(taskId)) {
+      console.log(
+        '[loadTask] INVALID TASK ID:',
+        JSON.stringify(taskId),
+      );
+
       return res.status(400).json({
         success: false,
         message: 'Invalid task id',

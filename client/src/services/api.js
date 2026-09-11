@@ -4,36 +4,97 @@ const TOKEN_KEY = 'setu_token';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
-// Request interceptor
-// Automatically attaches JWT to every outgoing request.
+// ============================================================
+// REQUEST INTERCEPTOR
+// ============================================================
+
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem(TOKEN_KEY);
+    const token =
+      localStorage.getItem(
+        TOKEN_KEY,
+      );
+
+    // --------------------------------------------------------
+    // Attach JWT
+    // --------------------------------------------------------
 
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers =
+        config.headers || {};
+
+      config.headers.Authorization =
+        `Bearer ${token}`;
+    }
+
+    // --------------------------------------------------------
+    // IMPORTANT:
+    // File uploads use FormData.
+    //
+    // Do NOT manually set:
+    // Content-Type: multipart/form-data
+    //
+    // The browser must generate the boundary automatically.
+    // --------------------------------------------------------
+
+    if (
+      config.data instanceof FormData
+    ) {
+      if (config.headers) {
+        delete config.headers[
+          'Content-Type'
+        ];
+
+        delete config.headers[
+          'content-type'
+        ];
+      }
+    } else {
+      // ------------------------------------------------------
+      // Normal JSON API requests
+      // ------------------------------------------------------
+
+      config.headers =
+        config.headers || {};
+
+      config.headers[
+        'Content-Type'
+      ] = 'application/json';
     }
 
     return config;
   },
-  (error) => Promise.reject(error),
+
+  (error) =>
+    Promise.reject(error),
 );
 
-// Response interceptor
-// Clears the token if the backend says the token is invalid/expired.
+// ============================================================
+// RESPONSE INTERCEPTOR
+// ============================================================
+
 api.interceptors.response.use(
-  (response) => response,
+  (response) =>
+    response,
+
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem(TOKEN_KEY);
+    // --------------------------------------------------------
+    // Invalid/expired JWT
+    // --------------------------------------------------------
+
+    if (
+      error.response?.status === 401
+    ) {
+      localStorage.removeItem(
+        TOKEN_KEY,
+      );
     }
 
-    return Promise.reject(error);
+    return Promise.reject(
+      error,
+    );
   },
 );
 
