@@ -19,6 +19,18 @@ export const ACTIVITY_ACTIONS = [
   'comment.created',
   'comment.updated',
   'comment.deleted',
+
+  // AI-related activities
+  'ai.analysis_requested',
+  'ai.summary_requested',
+  'ai.priority_recommendation_requested',
+  'ai.labels_recommendation_requested',
+  'ai.subtasks_generation_requested',
+  'ai.solutions_requested',
+
+  'ai.priority_applied',
+  'ai.labels_applied',
+  'ai.subtasks_created',
 ];
 
 export const ACTIVITY_ENTITY_TYPES = [
@@ -26,6 +38,7 @@ export const ACTIVITY_ENTITY_TYPES = [
   'task',
   'comment',
   'project_member',
+  'ai',
 ];
 
 const activitySchema = new mongoose.Schema(
@@ -83,7 +96,7 @@ const activitySchema = new mongoose.Schema(
   },
 );
 
-// Main activity-feed query.
+// Main project activity-feed query.
 activitySchema.index({
   project: 1,
   createdAt: -1,

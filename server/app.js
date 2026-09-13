@@ -26,6 +26,8 @@ import notificationRoutes from './routes/notification.routes.js';
 
 import attachmentRoutes from './routes/attachment.routes.js';
 
+import aiRoutes from './routes/ai.routes.js';
+
 import notFound from './middleware/notFound.middleware.js';
 
 import errorHandler from './middleware/error.middleware.js';
@@ -111,6 +113,11 @@ app.use(
   '/api/tasks',
   attachmentRoutes,
 );
+app.use(
+  '/api/ai',
+  aiRoutes,
+);
+
 
 // ============================================================
 // 404 handler
