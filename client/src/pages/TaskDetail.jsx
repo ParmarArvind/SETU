@@ -15,6 +15,9 @@ import {
   updateTaskStatus,
 } from '../services/task.service';
 
+import AIAssistantPanel from '../components/ai/AIAssistantPanel';
+
+
 import { listProjectMembers } from '../services/project.service';
 import TaskAttachments from '../components/TaskAttachments';
 import './task-attachments.css';
@@ -501,6 +504,17 @@ const TaskDetail = () => {
       <p>
         Status: {task.status}
       </p>
+
+      {/* ======================================================
+    AI ASSISTANT
+   ====================================================== */}
+
+        <AIAssistantPanel
+          taskId={taskId}
+          projectId={projectId}
+          currentLabels={task.labels || []}
+          onTaskUpdated={setTask}
+        />
 
       {/* ======================================================
           STATUS
